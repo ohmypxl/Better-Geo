@@ -66,7 +66,6 @@ stock bool:Geo_CheckIpAddress(const string:ipAddress[], Func:cb<i>, GeoCheckOpti
 	}
 
 	queryBuilder[strlen(queryBuilder) - 1] = EOS; // remove extra comma
-	printf("The query builder results: %s", queryBuilder);
 	
 	new RequestsClient:client = RequestsClient("http://ip-api.com", RequestHeaders());
 

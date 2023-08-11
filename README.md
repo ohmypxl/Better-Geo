@@ -42,7 +42,7 @@ public OnPlayerConnect(playerid)
 	Geo_CheckPlayer(
 		playerid, 
 		using inline OnGeoResults, 
-		OPTION_IP_RESULTS | OPTION_COUNTRY_NAME | OPTION_ISP_NAME
+		OPTION_COUNTRY_NAME | OPTION_ISP_NAME
 	);
 	return 1;
 }
