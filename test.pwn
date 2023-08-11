@@ -7,31 +7,26 @@
 
 main() 
 {
-	// write code here and run "sampctl package build" to compile
-	// then run "sampctl package run" to run it
-}
-
-public OnPlayerConnect(playerid)
-{
 	inline OnGeoResults(GeoResults:result)
 	{
 		if (!IsValidGeoResults(result))
 		{
-			printf("Unable to give results to %d", playerid);
-			return 0;
+			print("Unable to give the results");
+			return;
 		}
 
-		new string:countryName[32], string:ispName[32];
+		new 
+			string:ipResults[16 + 1],
+			string:countryName[32], 
+			string:ispName[32];
+
+		Geo_GetIpResults(result, ipResults);
 		Geo_GetCountryName(result, countryName);
 		Geo_GetISPName(result, ispName);
 
-		va_SendClientMessage(playerid, 0xFFFFFFAA, "LOGIN: %s is logged-in to the server [%s | %s]", ReturnPlayerName(playerid), countryName, ispName);
+		printf("This %s is from %s using %s ISP's", ipResults, countryName, ispName);
 	}
 
-	Geo_CheckPlayer(
-		playerid, 
-		using inline OnGeoResults, 
-		OPTION_IP_RESULTS | OPTION_COUNTRY_NAME | OPTION_ISP_NAME
-	);
-	return 1;
+	Geo_CheckIpAddress("24.48.0.1", using inline OnGeoResults);
 }
+

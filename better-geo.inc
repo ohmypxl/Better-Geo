@@ -31,11 +31,10 @@ enum GeoCheckOption(<<=1)
 	OPTION_DEFAULT = OPTION_COUNTRY_NAME | OPTION_REGION_NAME | OPTION_CITY_NAME | OPTION_ISP_NAME | OPTION_IP_RESULTS
 };
 
-stock bool:Geo_CheckPlayer(playerid, Func:cb<i>, GeoCheckOption:option = OPTION_DEFAULT)
+stock bool:Geo_CheckIpAddress(const string:ipAddress[], Func:cb<i>, GeoCheckOption:option = OPTION_DEFAULT)
 {
-	new string:queryBuilder[64];
-	GetPlayerIp(playerid, queryBuilder, 16);
-	format(queryBuilder, sizeof(queryBuilder), "json/%s/?", queryBuilder);
+	new string:queryBuilder[256 + 1];
+	format(queryBuilder, sizeof(queryBuilder), "/json/%s?fields=status,", ipAddress);
 
 	if (option & OPTION_COUNTRY_NAME)
 	{
@@ -92,6 +91,14 @@ stock bool:Geo_CheckPlayer(playerid, Func:cb<i>, GeoCheckOption:option = OPTION_
 	Indirect_Claim(cb);
 	Geo_g_sCallbacks[_:jsonRequest] = cb;
 	return true;
+}
+
+stock bool:Geo_CheckPlayer(playerid, Func:cb<i>, GeoCheckOption:option = OPTION_DEFAULT)
+{
+	new ipAddress[16 + 1];
+	GetPlayerIp(playerid, queryBuilder, 16);
+
+	return Geo_CheckIpAddress(ipAddress, cb, option);
 }
 
 stock bool:IsValidGeoResults(GeoResults:results)
@@ -165,7 +172,7 @@ stock bool:Geo_GetISPName(GeoResults:results, string:output[], len = sizeof(outp
 	return true;
 }
 
-stock bool:Geo_GetIPAddress(GeoResults:results, string:output[], len = sizeof(output))
+stock bool:Geo_GetIpResults(GeoResults:results, string:output[], len = sizeof(output))
 {
 	if (results == INVALID_GEO_RESULTS)
 	{
@@ -181,15 +188,12 @@ public Geo_OnResults(Request:id, E_HTTP_STATUS:status, Node:node)
 {
 	new geoStatus[16];
 	JsonGetString(node, "status", geoStatus);
-	printf("Getting the status code: %s | %d", geoStatus, _:status);
 
 	new Func:cb<i> = Geo_g_sCallbacks[_:id], ret = _:node;
 	Geo_g_sCallbacks[_:id] = Func:0<i>;
-	print("Prepare the calling...");
 
 	if (strequal(geoStatus, "fail") || status != HTTP_STATUS_OK)
 	{
-		print("Oh nyo tuns out it's fail/not 200");
 		ret = cellmin;
 	}
 
