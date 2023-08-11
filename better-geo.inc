@@ -1,4 +1,10 @@
 
+#if defined _better_geo_included
+	#endinput
+#endif
+
+#define _better_geo_included
+
 #include <a_samp>
 #include <requests>
 
@@ -10,69 +16,59 @@
 
 #define INVALID_GEO_RESULTS GeoResults:cellmin
 
-enum e_GEO_RESULTS
-{
-	GEO_RESULTS_COUNTRY[64], 
-	GEO_RESULTS_COUNTRY_CODE[3],
-	GEO_RESULTS_REGION[32],
-	GEO_RESULTS_REGION_NAME[32],
-	GEO_RESULTS_CITY[32],
-	GEO_RESULTS_ISP[32],
-	GEO_RESULTS_IP[32],
-};
-
 static
-	Func:Geo_g_sCallbacks[MAX_GEO_REQUESTS]<i>,
-	string:Geo_g_sResults[MAX_GEO_REQUESTS][e_GEO_RESULTS];
+	Func:Geo_g_sCallbacks[MAX_GEO_REQUESTS]<i>;
 
 enum GeoCheckOption(<<=1)
 {
-	GEO_OPTION_CHECK_COUNTRY = 1, 
-	GEO_OPTION_CHECK_COUNTRY_CODE,
-	GEO_OPTION_CHECK_REGION,
-	GEO_OPTION_CHECK_REGION_NAME,
-	GEO_OPTION_CHECK_CITY,
-	GEO_OPTION_CHECK_ISP,
-	GEO_OPTION_CHECK_IP_RESULTS,
-	GEO_OPTION_DEFAULT = GEO_OPTION_CHECK_COUNTRY | GEO_OPTION_CHECK_REGION_NAME | GEO_OPTION_CHECK_CITY | GEO_OPTION_CHECK_ISP | GEO_OPTION_CHECK_IP_RESULTS
+	OPTION_COUNTRY_NAME = 1, 
+	OPTION_COUNTRY_CODE,
+	OPTION_REGION_NAME,
+	OPTION_REGION_CODE,
+	OPTION_CITY_NAME,
+	OPTION_ISP_NAME,
+	OPTION_IP_RESULTS,
+	OPTION_DEFAULT = OPTION_COUNTRY_NAME | OPTION_REGION_NAME | OPTION_CITY_NAME | OPTION_ISP_NAME | OPTION_IP_RESULTS
 };
 
-stock bool:Geo_CheckPlayer(playerid, Func:cb<i>, GeoCheckOption:option = GEO_OPTION_DEFAULT)
-{`
+stock bool:Geo_CheckPlayer(playerid, Func:cb<i>, GeoCheckOption:option = OPTION_DEFAULT)
+{
 	new string:queryBuilder[64];
 	GetPlayerIp(playerid, queryBuilder, 16);
 	format(queryBuilder, sizeof(queryBuilder), "json/%s/?", queryBuilder);
 
-	if (option & OPTION_CHECK_COUNTRY)
+	if (option & OPTION_COUNTRY_NAME)
 	{
 		strcat(queryBuilder, "country,");
 	}
-	if (option & OPTION_CHECK_COUNTRY_CODE)
+	if (option & OPTION_COUNTRY_CODE)
 	{
 		strcat(queryBuilder, "countryCode,");
 	}
-	if (option & OPTION_CHECK_REGION)
-	{
-		strcat(queryBuilder, "region,");
-	}
-	if (option & OPTION_CHECK_REGION_NAME)
+	if (option & OPTION_REGION_NAME)
 	{
 		strcat(queryBuilder, "regionName,");
 	}
-	if (option & OPTION_CHECK_CITY)
+	if (option & OPTION_REGION_CODE)
+	{
+		strcat(queryBuilder, "region,");
+	}
+	if (option & OPTION_CITY_NAME)
 	{
 		strcat(queryBuilder, "city,");
 	}
-	if (option & OPTION_CHECK_ISP)
+	if (option & OPTION_ISP_NAME)
 	{
 		strcat(queryBuilder, "isp,");
 	}
-	if (option & OPTION_CHECK_IP_RESULTS)
+	if (option & OPTION_IP_RESULTS)
 	{
 		strcat(queryBuilder, "query,");
 	}
 
 	queryBuilder[strlen(queryBuilder) - 1] = EOS; // remove extra comma
+	printf("The query builder results: %s", queryBuilder);
+	
 	new RequestsClient:client = RequestsClient("http://ip-api.com", RequestHeaders());
 
 	if (!IsValidRequestsClient(client))
@@ -80,7 +76,7 @@ stock bool:Geo_CheckPlayer(playerid, Func:cb<i>, GeoCheckOption:option = GEO_OPT
 		return false;
 	}
 
-	new Request:jsonRequest = RequestJson(
+	new Request:jsonRequest = RequestJSON(
 		client,
 		queryBuilder,
 		HTTP_METHOD_GET,
@@ -88,14 +84,19 @@ stock bool:Geo_CheckPlayer(playerid, Func:cb<i>, GeoCheckOption:option = GEO_OPT
 		.headers = RequestHeaders()
 	);
 
-    if (!IsValidRequest(jsonRequest) || jsonRequest >= Request:MAX_GEO_REQUESTS)
-    {
-    	return false;
-    }
+	if (!IsValidRequest(jsonRequest) || jsonRequest >= Request:MAX_GEO_REQUESTS)
+	{
+		return false;
+	}
 
-    Indirect_Claim(cb);
-    Geo_g_sCallbacks[_:jsonRequest] = cb;
-    return true;
+	Indirect_Claim(cb);
+	Geo_g_sCallbacks[_:jsonRequest] = cb;
+	return true;
+}
+
+stock bool:IsValidGeoResults(GeoResults:results)
+{
+	return (results != INVALID_GEO_RESULTS);
 }
 
 stock bool:Geo_GetCountryName(GeoResults:results, string:output[], len = sizeof(output))
@@ -105,7 +106,7 @@ stock bool:Geo_GetCountryName(GeoResults:results, string:output[], len = sizeof(
 		return false;
 	}
 
-	strcopy(output, Geo_g_sResults[_:results][GEO_RESULTS_COUNTRY], len);
+	JsonGetString(Node:_:results, "country", output, len);
 	return true;
 }
 
@@ -116,7 +117,7 @@ stock bool:Geo_GetCountryCode(GeoResults:results, string:output[], len = sizeof(
 		return false;
 	}
 
-	strcopy(output, Geo_g_sResults[_:results][GEO_RESULTS_COUNTRY_CODE], len);
+	JsonGetString(Node:_:results, "countryCode", output, len);
 	return true;
 }
 
@@ -127,7 +128,7 @@ stock bool:Geo_GetRegionName(GeoResults:results, string:output[], len = sizeof(o
 		return false;
 	}
 
-	strcopy(output, Geo_g_sResults[_:results][GEO_RESULTS_REGION_NAME], len);
+	JsonGetString(Node:_:results, "regionName", output, len);
 	return true;
 }
 
@@ -138,7 +139,7 @@ stock bool:Geo_GetRegionCode(GeoResults:results, string:output[], len = sizeof(o
 		return false;
 	}
 
-	strcopy(output, Geo_g_sResults[_:results][GEO_RESULTS_REGION], len);
+	JsonGetString(Node:_:results, "regionCode", output, len);
 	return true;
 }
 
@@ -149,7 +150,7 @@ stock bool:Geo_GetCityName(GeoResults:results, string:output[], len = sizeof(out
 		return false;
 	}
 
-	strcopy(output, Geo_g_sResults[_:results][GEO_RESULTS_CITY], len);
+	JsonGetString(Node:_:results, "city", output, len);
 	return true;
 }
 
@@ -160,7 +161,7 @@ stock bool:Geo_GetISPName(GeoResults:results, string:output[], len = sizeof(outp
 		return false;
 	}
 
-	strcopy(output, Geo_g_sResults[_:results][GEO_RESULTS_ISP], len);
+	JsonGetString(Node:_:results, "isp", output, len);
 	return true;
 }
 
@@ -171,7 +172,7 @@ stock bool:Geo_GetIPAddress(GeoResults:results, string:output[], len = sizeof(ou
 		return false;
 	}
 
-	strcopy(output, Geo_g_sResults[_:results][GEO_RESULTS_IP], len);
+	JsonGetString(Node:_:results, "query", output, len);
 	return true;
 }
 
@@ -179,27 +180,20 @@ forward Geo_OnResults(Request:id, E_HTTP_STATUS:status, Node:node);
 public Geo_OnResults(Request:id, E_HTTP_STATUS:status, Node:node)
 {
 	new geoStatus[16];
-	JsonGetString(node, "status", status);
+	JsonGetString(node, "status", geoStatus);
+	printf("Getting the status code: %s | %d", geoStatus, _:status);
 
-    new Func:cb<iii> = Geo_g_sCallbacks[_:id];
-    Geo_g_sCallbacks[_:id] = Func:0<iii>;
+	new Func:cb<i> = Geo_g_sCallbacks[_:id], ret = _:node;
+	Geo_g_sCallbacks[_:id] = Func:0<i>;
+	print("Prepare the calling...");
 
-	if (strqeual(geoStatus, "fail"))
+	if (strequal(geoStatus, "fail") || status != HTTP_STATUS_OK)
 	{
-		@.cb(cellmin);
-		Indirect_Release(cb);
-		return 0;
+		print("Oh nyo tuns out it's fail/not 200");
+		ret = cellmin;
 	}
 
-	JsonGetString(node, "country", Geo_g_sResults[_:id][GEO_RESULTS_COUNTRY], 32);
-	JsonGetString(node, "countryCode", Geo_g_sResults[_:id][GEO_RESULTS_COUNTRY_CODE], 32);
-	JsonGetString(node, "region", Geo_g_sResults[_:id][GEO_RESULTS_REGION], 32);
-	JsonGetString(node, "regionName", Geo_g_sResults[_:id][GEO_RESULTS_REGION_NAME], 32);
-	JsonGetString(node, "city", Geo_g_sResults[_:id][GEO_RESULTS_CITY], 32);
-	JsonGetString(node, "isp", Geo_g_sResults[_:id][GEO_RESULTS_ISP], 32);
-	JsonGetString(node, "query", Geo_g_sResults[_:id][GEO_RESULTS_IP], 32);
-
-	@.cb(_:id);
+	@.cb(_:ret);
 	Indirect_Release(cb);
 	return 1;
 }
