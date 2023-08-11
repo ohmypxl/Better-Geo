@@ -1,4 +1,4 @@
-site: ""
+site: "github.com"
 user: ohmypxl
 repo: Better-Geo
 entry: test.pwn
@@ -7,11 +7,3 @@ dependencies:
     - pawn-lang/samp-stdlib
     - southclaws/pawn-requests:0.10.0
     - pawn-lang/YSI-Includes@5.x
-runtime:
-    version: 0.3.7
-    mode: server
-    rcon_password: password
-    port: 7777
-    hostname: SA-MP Server
-    maxplayers: 50
-    language: ""
