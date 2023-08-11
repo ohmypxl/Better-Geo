@@ -49,7 +49,7 @@ public OnPlayerConnect(playerid)
 ```
 
 Function Info:
-```
+```pawn
 // This will initiate geo checking based on playerid IP's
 forward bool:Geo_CheckPlayer(playerid, inline callback, GeoCheckOption:option);
 
