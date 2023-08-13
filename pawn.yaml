@@ -1,9 +1,13 @@
 site: "github.com"
 user: ohmypxl
-repo: Better-Geo
+repo: Geo-Requests
+
 entry: test.pwn
 output: gamemodes/test.amx
+
+dev_dependencies:
+    - pawn-lang/YSI-Includes@5.x
+
 dependencies:
     - pawn-lang/samp-stdlib
     - southclaws/pawn-requests:0.10.0
-    - pawn-lang/YSI-Includes@5.x
