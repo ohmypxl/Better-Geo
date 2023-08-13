@@ -23,7 +23,7 @@ main()
 
 		Geo_GetIpResults(result, ipResults);
 		Geo_GetCountryName(result, countryName);
-		Geo_GetISPName(result, ispName);
+		Geo_GetIspName(result, ispName);
 
 		printf("This %s is from %s using %s ISP's", ipResults, countryName, ispName);
 	}
