@@ -6,7 +6,7 @@ This is the Reinventing-Wheel geoip but using requests, that's it.
 
 Why? because unlike certain someone i feel like using plugins like requests is a must!, it's also for me to better understand about how to work with requests.
 
-***Note:**For now we only support http connection, if you know how to make ssl connection with example keys, feel free to make PR*
+***Note:** For now we only support http connection, if you know how to make ssl connection with example keys, feel free to make PR*
 
 ## Installation
 
