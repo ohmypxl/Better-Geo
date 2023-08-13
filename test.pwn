@@ -3,7 +3,8 @@
 
 #define YSI_NO_HEAP_MALLOC
 
-#include "better-geo.inc"
+#include <YSI_Coding\y_inline>
+#include "Geo-Requests.inc"
 
 main() 
 {
@@ -27,6 +28,6 @@ main()
 		printf("This %s is from %s using %s ISP's", ipResults, countryName, ispName);
 	}
 
-	Geo_CheckIpAddress("24.48.0.1", using inline OnGeoResults);
+	Geo_CheckIp("24.48.0.1", using inline OnGeoResults);
 }
 
